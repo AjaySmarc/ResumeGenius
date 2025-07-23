@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { LogOut, User, Zap, FileText, Star, CheckCircle } from 'lucide-react';
 import AdvancedAuthPage from './AuthPage'; // Make sure this path is correct
+import ResumeBuilder from './Home'; // Add this import at the top
 
 interface UserData {
   name: string;
@@ -25,6 +26,11 @@ export default function Home() {
   const handleGetStarted = () => {
     setShowAuth(true);
   };
+
+  // Render ResumeBuilder if user is logged in
+  if (user) {
+    return <ResumeBuilder />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">

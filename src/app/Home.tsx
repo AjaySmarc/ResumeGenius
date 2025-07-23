@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Home,
   FileText,
@@ -17,6 +17,7 @@ import {
   LogOut,
   Menu,
   X,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 const ResumeBuilder = () => {
@@ -24,6 +25,8 @@ const ResumeBuilder = () => {
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sample data for demonstration
   const [resumes, setResumes] = useState([
@@ -48,8 +51,8 @@ const ResumeBuilder = () => {
   ]);
 
   const [userInfo, setUserInfo] = useState({
-    fullName: '',
-    email: '',
+    fullName: 'John Doe',
+    email: 'john@example.com',
     phone: '',
     address: '',
     linkedin: '',
@@ -76,6 +79,29 @@ const ResumeBuilder = () => {
 
   const handleDeleteResume = (id: number) => {
     setResumes((prev) => prev.filter((resume) => resume.id !== id));
+  };
+
+  const handleProfileImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setProfileImage(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSignOut = () => {
+    // In a real app, you would handle auth state change here
+    // For this example, we'll just reload the page to simulate going back to auth
+    window.location.href = '/authpage';
   };
 
   const renderHomePage = () => (
@@ -258,6 +284,36 @@ const ResumeBuilder = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Personal Information
           </h2>
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 border-2 border-blue-100">
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={triggerFileInput}
+                className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
+              >
+                <ImageIcon className="w-4 h-4" />
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleProfileImageUpload}
+                className="hidden"
+                accept="image/*"
+              />
+            </div>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -430,6 +486,137 @@ const ResumeBuilder = () => {
     </div>
   );
 
+  const renderAboutPage = () => (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          About ResumeAI
+        </h1>
+        <p className="text-lg text-gray-600">
+          Learn more about our mission and the team behind ResumeAI
+        </p>
+      </div>
+
+      <div className="bg-white p-8 rounded-xl shadow-lg border border-blue-100">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          Our Mission
+        </h2>
+        <p className="text-gray-700 mb-6">
+          ResumeAI was founded with the goal of making job applications easier
+          and more effective. We leverage artificial intelligence to help job
+          seekers create resumes that stand out and pass through applicant
+          tracking systems with ease.
+        </p>
+
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          How We Help
+        </h2>
+        <ul className="list-disc pl-5 space-y-2 text-gray-700 mb-6">
+          <li>AI-powered resume tailoring based on job descriptions</li>
+          <li>ATS optimization to ensure your resume gets seen</li>
+          <li>Professional templates that highlight your strengths</li>
+          <li>Centralized profile management for multiple applications</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">The Team</h2>
+        <p className="text-gray-700">
+          Our team consists of HR professionals, software engineers, and data
+          scientists who are passionate about helping people succeed in their
+          job search.
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderContactUsPage = () => (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Contact Us</h1>
+        <p className="text-lg text-gray-600">
+          We'd love to hear from you! Reach out with any questions or feedback.
+        </p>
+      </div>
+
+      <div className="bg-white p-8 rounded-xl shadow-lg border border-blue-100">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Get in Touch
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-4">
+                <Mail className="w-5 h-5 text-blue-600 mt-1" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Email</h3>
+                  <p className="text-gray-600">support@resumeai.com</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <Phone className="w-5 h-5 text-blue-600 mt-1" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Phone</h3>
+                  <p className="text-gray-600">+1 (555) 123-4567</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
+                <Calendar className="w-5 h-5 text-blue-600 mt-1" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Hours</h3>
+                  <p className="text-gray-600">
+                    Monday - Friday, 9am - 5pm EST
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Send Us a Message
+            </h2>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Your name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Message
+                </label>
+                <textarea
+                  className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  placeholder="Your message here..."
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              >
+                Send Message
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'home':
@@ -440,6 +627,10 @@ const ResumeBuilder = () => {
         return renderMyInfoPage();
       case 'library':
         return renderLibraryPage();
+      case 'about':
+        return renderAboutPage();
+      case 'contactus':
+        return renderContactUsPage();
       default:
         return renderHomePage();
     }
@@ -514,6 +705,8 @@ const ResumeBuilder = () => {
               </button>
               <h1 className="text-2xl font-bold text-gray-900">
                 {sidebarItems.find((item) => item.id === currentPage)?.label ||
+                  (currentPage === 'about' && 'About') ||
+                  (currentPage === 'contactus' && 'Contact Us') ||
                   'Dashboard'}
               </h1>
             </div>
@@ -525,7 +718,15 @@ const ResumeBuilder = () => {
                 className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-5 h-5 text-white" />
+                  )}
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-600" />
               </button>
@@ -534,31 +735,56 @@ const ResumeBuilder = () => {
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
                   <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                        <User className="w-6 h-6 text-white" />
+                      <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
+                        {profileImage ? (
+                          <img
+                            src={profileImage}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-6 h-6 text-white" />
+                        )}
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">John Doe</p>
+                        <p className="font-semibold text-gray-900">
+                          {userInfo.fullName}
+                        </p>
                         <p className="text-sm text-gray-600">
-                          john@example.com
+                          {userInfo.email}
                         </p>
                         <p className="text-xs text-gray-500">
-                          DOB: Jan 15, 1990
+                          Member since Jan 2024
                         </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="p-2">
-                    <button className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg text-left">
+                    <button
+                      onClick={() => {
+                        setCurrentPage('about');
+                        setProfileDropdown(false);
+                      }}
+                      className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg text-left"
+                    >
                       <Info className="w-4 h-4 text-gray-600" />
                       <span className="text-gray-700">About</span>
                     </button>
-                    <button className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg text-left">
+                    <button
+                      onClick={() => {
+                        setCurrentPage('contactus');
+                        setProfileDropdown(false);
+                      }}
+                      className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg text-left"
+                    >
                       <Phone className="w-4 h-4 text-gray-600" />
                       <span className="text-gray-700">Contact Us</span>
                     </button>
-                    <button className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg text-left">
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg text-left"
+                    >
                       <LogOut className="w-4 h-4 text-gray-600" />
                       <span className="text-gray-700">Sign Out</span>
                     </button>
