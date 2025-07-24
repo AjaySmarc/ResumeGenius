@@ -100,8 +100,11 @@ const ResumeBuilder = () => {
     { id: 'library', label: 'Library', icon: BookOpen },
   ];
 
-  const handleInputChange = (field: string, value: string) => {
-    setUserInfo((prev) => ({ ...prev, [field]: value }));
+   const handleInputChange = (field: keyof UserData, value: string | OnlineProfile[]) => {
+    setUserInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
 const [editingOnlineProfileId, setEditingOnlineProfileId] = useState<string | null>(null);
