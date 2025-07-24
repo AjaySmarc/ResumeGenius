@@ -392,6 +392,19 @@ const ResumeBuilder = () => {
           />
         </div>
 
+        {/* Certifications */}
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Certifications
+          </h2>
+          <textarea
+            value={userInfo.experience}
+            onChange={(e) => handleInputChange('certifications', e.target.value)}
+            className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            placeholder="List your certifications, including job titles, companies, dates, and key achievements..."
+          />
+        </div>
+
         {/* Skills */}
         <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills</h2>
