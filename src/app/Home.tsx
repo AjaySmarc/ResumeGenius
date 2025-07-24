@@ -20,6 +20,30 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 
+interface OnlineProfile {
+  id: string;
+  title: string;
+  link: string;
+  achievements: string;
+}
+
+interface UserData {
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  linkedin: string;
+  github: string;
+  portfolio: string;
+  summary: string;
+  experience: string;
+  education: string;
+  skills: string;
+  certifications: string;
+  projects: string;
+  onlineProfiles: OnlineProfile[];
+}
+
 const ResumeBuilder = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [profileDropdown, setProfileDropdown] = useState(false);
@@ -50,7 +74,7 @@ const ResumeBuilder = () => {
     },
   ]);
 
-  const [userInfo, setUserInfo] = useState({
+  const [userInfo, setUserInfo] = useState<UserData>({
     fullName: 'John Doe',
     email: 'john@example.com',
     phone: '',
@@ -64,7 +88,10 @@ const ResumeBuilder = () => {
     skills: '',
     certifications: '',
     projects: '',
+    onlineProfiles: [] // Initialize as empty array
   });
+
+  
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -85,14 +112,7 @@ const [newOnlineProfile, setNewOnlineProfile] = useState<{
 }>({ title: '', link: '', achievements: '' });
 
 
-  interface UserData {
-  // ... your existing fields ...
-  onlineProfiles: Array<{
-    id: string;
-    title: string;
-    link: string;
-    achievements: string;
-  }>;
+  
 }
 
   const handleDeleteResume = (id: number) => {
