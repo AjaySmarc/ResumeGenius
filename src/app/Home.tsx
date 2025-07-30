@@ -1,6 +1,8 @@
-"use client";
+'use client';
 
 import React, { useState, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+
 import {
   Home,
   FileText,
@@ -53,6 +55,15 @@ const ResumeBuilder = () => {
   const [jobDescription, setJobDescription] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingOnlineProfileId, setEditingOnlineProfileId] = useState<
+    string | null
+  >(null);
+  const [newOnlineProfile, setNewOnlineProfile] = useState({
+    title: '',
+    link: '',
+    achievements: '',
+  });
+  const [isAddingNewProfile, setIsAddingNewProfile] = useState(false);
 
   // Sample data for demonstration
   const [resumes, setResumes] = useState([
@@ -90,10 +101,8 @@ const ResumeBuilder = () => {
     skills: '',
     certifications: '',
     projects: '',
-    onlineProfiles: [] // Initialize as empty array
+    onlineProfiles: [], // Initialize as empty array
   });
-
-  
 
   const sidebarItems = [
     { id: 'home', label: 'Home', icon: Home },
@@ -102,23 +111,12 @@ const ResumeBuilder = () => {
     { id: 'library', label: 'Library', icon: BookOpen },
   ];
 
-   const handleInputChange = (field: keyof UserData, value: string | OnlineProfile[]) => {
-    setUserInfo(prev => ({
+  const handleInputChange = (field: string, value: any) => {
+    setUserInfo((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
-
-const [editingOnlineProfileId, setEditingOnlineProfileId] = useState<string | null>(null);
-const [newOnlineProfile, setNewOnlineProfile] = useState<{
-  title: string;
-  link: string;
-  achievements: string;
-}>({ title: '', link: '', achievements: '' });
-
-
-  
-}
 
   const handleDeleteResume = (id: number) => {
     setResumes((prev) => prev.filter((resume) => resume.id !== id));
@@ -141,10 +139,35 @@ const [newOnlineProfile, setNewOnlineProfile] = useState<{
     fileInputRef.current?.click();
   };
 
+  const handleAddProfile = () => {
+    if (editingOnlineProfileId) {
+      // Existing edit logic (keep it as is)
+      const updatedProfiles = userInfo.onlineProfiles.map((profile) =>
+        profile.id === editingOnlineProfileId
+          ? { ...profile, ...newOnlineProfile }
+          : profile
+      );
+      handleInputChange('onlineProfiles', updatedProfiles);
+      setNewOnlineProfile({ title: '', link: '', achievements: '' });
+      setEditingOnlineProfileId(null);
+    } else {
+      // 💡 New profile logic (missing before)
+      const newProfile = {
+        id: uuidv4(),
+        title: newOnlineProfile.title,
+        link: newOnlineProfile.link,
+        achievements: newOnlineProfile.achievements,
+      };
+      const updatedProfiles = [...userInfo.onlineProfiles, newProfile];
+      handleInputChange('onlineProfiles', updatedProfiles);
+      setNewOnlineProfile({ title: '', link: '', achievements: '' });
+    }
+  };
+
   const handleSignOut = () => {
     // In a real app, you would handle auth state change here
     // For this example, we'll just reload the page to simulate going back to auth
-    window.location.href = '/authpage';
+    window.location.href = '/';
   };
 
   const renderHomePage = () => (
@@ -441,157 +464,216 @@ const [newOnlineProfile, setNewOnlineProfile] = useState<{
             Certifications
           </h2>
           <textarea
-            value={userInfo.experience}
-            onChange={(e) => handleInputChange('certifications', e.target.value)}
+            value={userInfo.certifications}
+            onChange={(e) =>
+              handleInputChange('certifications', e.target.value)
+            }
             className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             placeholder="List your certifications, including job titles, companies, dates, and key achievements..."
           />
         </div>
 
-{/* Online Profiles */}
-<div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
-  <div className="flex justify-between items-center mb-4">
-    <h2 className="text-xl font-semibold text-gray-900">Online Profiles</h2>
-    <button
-      onClick={() => {
-        setNewOnlineProfile({ title: '', link: '', achievements: '' });
-        setEditingOnlineProfileId(null);
-      }}
-      className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
-    >
-      + Add Profile
-    </button>
-  </div>
+        {/* Online Profiles */}
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Online Profiles
+            </h2>
+            <button
+              onClick={() => {
+                setNewOnlineProfile({ title: '', link: '', achievements: '' });
+                setEditingOnlineProfileId(null);
+                setIsAddingNewProfile(true);
+              }}
+              className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
+            >
+              + Add Profile
+            </button>
+          </div>
 
-  {/* Add/Edit Form (shown when editing or adding new) */}
-  {(editingOnlineProfileId !== null || newOnlineProfile.title) && (
-    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <div className="grid md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Platform (e.g., LeetCode, GitHub)
-          </label>
-          <input
-            type="text"
-            value={newOnlineProfile.title}
-            onChange={(e) => setNewOnlineProfile({ ...newOnlineProfile, title: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-lg"
-            placeholder="LeetCode"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Profile URL
-          </label>
-          <input
-            type="url"
-            value={newOnlineProfile.link}
-            onChange={(e) => setNewOnlineProfile({ ...newOnlineProfile, link: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-lg"
-            placeholder="https://leetcode.com/username"
-          />
-        </div>
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Achievements
-        </label>
-        <textarea
-          value={newOnlineProfile.achievements}
-          onChange={(e) => setNewOnlineProfile({ ...newOnlineProfile, achievements: e.target.value })}
-          className="w-full p-2 border border-gray-300 rounded-lg h-20"
-          placeholder="Top 5%, 500+ problems solved, etc."
-        />
-      </div>
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={() => {
-            setNewOnlineProfile({ title: '', link: '', achievements: '' });
-            setEditingOnlineProfileId(null);
-          }}
-          className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            if (editingOnlineProfileId) {
-              // Update existing profile
-              const updatedProfiles = userInfo.onlineProfiles.map(profile =>
-                profile.id === editingOnlineProfileId ? { ...newOnlineProfile, id: editingOnlineProfileId } : profile
-              );
-              handleInputChange('onlineProfiles', updatedProfiles);
-            } else {
-              // Add new profile
-              const updatedProfiles = [
-                ...userInfo.onlineProfiles,
-                { ...newOnlineProfile, id: Date.now().toString() }
-              ];
-              handleInputChange('onlineProfiles', updatedProfiles);
-            }
-            setNewOnlineProfile({ title: '', link: '', achievements: '' });
-            setEditingOnlineProfileId(null);
-          }}
-          className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
-        >
-          {editingOnlineProfileId ? 'Update' : 'Save'}
-        </button>
-      </div>
-    </div>
-  )}
+          {/* Add/Edit Form (shown when editing or adding new) */}
+          {/* {(editingOnlineProfileId !== null || newOnlineProfile.title) && ( */}
+          {(editingOnlineProfileId !== null || isAddingNewProfile) && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Platform (e.g., LeetCode, GitHub)
+                  </label>
+                  <input
+                    type="text"
+                    value={newOnlineProfile.title}
+                    onChange={(e) =>
+                      setNewOnlineProfile({
+                        ...newOnlineProfile,
+                        title: e.target.value,
+                      })
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-lg"
+                    placeholder="LeetCode"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Profile URL
+                  </label>
+                  <input
+                    type="url"
+                    value={newOnlineProfile.link}
+                    onChange={(e) =>
+                      setNewOnlineProfile({
+                        ...newOnlineProfile,
+                        link: e.target.value,
+                      })
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-lg"
+                    placeholder="https://leetcode.com/username"
+                  />
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Achievements
+                </label>
+                <textarea
+                  value={newOnlineProfile.achievements}
+                  onChange={(e) =>
+                    setNewOnlineProfile({
+                      ...newOnlineProfile,
+                      achievements: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border border-gray-300 rounded-lg h-20"
+                  placeholder="Top 5%, 500+ problems solved, etc."
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => {
+                    setNewOnlineProfile({
+                      title: '',
+                      link: '',
+                      achievements: '',
+                    });
+                    setEditingOnlineProfileId(null);
+                    setIsAddingNewProfile(false);
+                  }}
+                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (editingOnlineProfileId) {
+                      // Update existing profile
+                      const updatedProfiles = userInfo.onlineProfiles.map(
+                        (profile) =>
+                          profile.id === editingOnlineProfileId
+                            ? {
+                                ...newOnlineProfile,
+                                id: editingOnlineProfileId,
+                              }
+                            : profile
+                      );
+                      handleInputChange('onlineProfiles', updatedProfiles);
+                    } else {
+                      // Add new profile
+                      const updatedProfiles = [
+                        ...userInfo.onlineProfiles,
+                        { ...newOnlineProfile, id: Date.now().toString() },
+                      ];
+                      handleInputChange('onlineProfiles', updatedProfiles);
+                    }
+                    setNewOnlineProfile({
+                      title: '',
+                      link: '',
+                      achievements: '',
+                    });
+                    setEditingOnlineProfileId(null);
+                    setIsAddingNewProfile(false);
+                  }}
+                  className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
+                >
+                  {editingOnlineProfileId ? 'Update' : 'Save'}
+                </button>
+              </div>
+            </div>
+          )}
 
-  {/* Profiles List */}
-  <div className="space-y-4">
-    {userInfo.onlineProfiles.length === 0 ? (
-      <p className="text-gray-500 text-center py-4">No online profiles added yet</p>
-    ) : (
-      userInfo.onlineProfiles.map((profile) => (
-        <div key={profile.id} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-medium text-gray-900">{profile.title}</h3>
-              <a 
-                href={profile.link} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 text-sm hover:underline"
-              >
-                {profile.link}
-              </a>
-              {profile.achievements && (
-                <p className="text-gray-600 text-sm mt-1">{profile.achievements}</p>
-              )}
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => {
-                  setNewOnlineProfile({
-                    title: profile.title,
-                    link: profile.link,
-                    achievements: profile.achievements
-                  });
-                  setEditingOnlineProfileId(profile.id);
-                }}
-                className="text-blue-600 hover:text-blue-800 p-1"
-              >
-                <Edit className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  const updatedProfiles = userInfo.onlineProfiles.filter(p => p.id !== profile.id);
-                  handleInputChange('onlineProfiles', updatedProfiles);
-                }}
-                className="text-red-600 hover:text-red-800 p-1"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+          {/* Profiles List */}
+          {/* Profiles List */}
+          <div className="space-y-4">
+            {userInfo.onlineProfiles.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">
+                No online profiles added yet
+              </p>
+            ) : (
+              <div className="border border-gray-200 rounded-lg">
+                {/* Header Row */}
+                <div className="grid grid-cols-4 bg-gray-100 font-semibold text-gray-700 text-sm p-3 border-b">
+                  <div>Title</div>
+                  <div>Link</div>
+                  <div>Achievements</div>
+                  <div className="text-right">Actions</div>
+                </div>
+
+                {/* Profile Rows */}
+                {userInfo.onlineProfiles.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className="grid grid-cols-4 items-start p-3 border-b hover:bg-gray-50 text-sm"
+                  >
+                    <div className="font-medium text-gray-900">
+                      {profile.title}
+                    </div>
+                    <div>
+                      <a
+                        href={profile.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline break-all"
+                      >
+                        {profile.link}
+                      </a>
+                    </div>
+                    <div className="text-gray-600">
+                      {profile.achievements || '-'}
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => {
+                          setNewOnlineProfile({
+                            title: profile.title,
+                            link: profile.link,
+                            achievements: profile.achievements,
+                          });
+                          setEditingOnlineProfileId(profile.id);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 p-1"
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const updatedProfiles =
+                            userInfo.onlineProfiles.filter(
+                              (p) => p.id !== profile.id
+                            );
+                          handleInputChange('onlineProfiles', updatedProfiles);
+                        }}
+                        className="text-red-600 hover:text-red-800 p-1"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      ))
-    )}
-  </div>
-</div>
 
         {/* Skills */}
         <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
@@ -1004,3 +1086,7 @@ const [newOnlineProfile, setNewOnlineProfile] = useState<{
 };
 
 export default ResumeBuilder;
+
+function handleDeleteResume(id: any): void {
+  throw new Error('Function not implemented.');
+}
